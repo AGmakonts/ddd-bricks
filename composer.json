@@ -9,6 +9,8 @@
 	"description" : "Basic components for ddd project",
 	"license" : "Apache-2.0",
 	"require" : {
-		"php" : ">=5.5"
+		"php" : ">=5.5",
+		"agmakonts/stl" : "dev-master",
+		"marc-mabe/php-enum" : "1.2.0"
 	}
 }
