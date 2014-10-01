@@ -1,0 +1,14 @@
+{
+	"autoload" : {
+		"psr-0" : {
+			"AGmakonts" : "src"
+		}
+	},
+	"name" : "agmakonts/ddd-bricks",
+	"type" : "library",
+	"description" : "Basic components for ddd project",
+	"license" : "Apache-2.0",
+	"require" : {
+		"php" : ">=5.5"
+	}
+}
