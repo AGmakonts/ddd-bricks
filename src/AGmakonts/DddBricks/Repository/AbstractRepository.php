@@ -130,7 +130,7 @@ abstract class AbstractRepository
             $property->setValue($entity, $data[$property->getName()]);
         }
 
-        return $entity
+        return $entity;
     }
 
 }
