@@ -71,7 +71,7 @@ abstract class AbstractRepository
         $filteredData = [];
         $propertyKeys = $this->_extractPropertyKeys($properties);
 
-        foreach($data as $field) {
+        foreach($dataKeys as $field) {
 
             $keyNameVariants = [
                 $field,
