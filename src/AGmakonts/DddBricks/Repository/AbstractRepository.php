@@ -33,11 +33,11 @@ abstract class AbstractRepository
     {
         $entityClass = new \ReflectionClass($this->getEntityType());
 
-        if(FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
+        if (FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
             throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_A_ENTITY);
         }
 
-        if(FALSE === $entityClass->isInstantiable()) {
+        if (FALSE === $entityClass->isInstantiable()) {
             throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_INSTANTIABLE);
         }
 
@@ -56,14 +56,14 @@ abstract class AbstractRepository
     }
 
     /**
-     * @param array                $data
+     * @param array $data
      * @param ReflectionProperty[] $properties
      *
      * @return array
      */
     private function _validateAndFilterDataKeys(array $data, array $properties)
     {
-        if(count($data) !== count($properties)) {
+        if (count($data) !== count($properties)) {
             return FALSE;
         }
 
@@ -71,7 +71,7 @@ abstract class AbstractRepository
         $filteredData = [];
         $propertyKeys = $this->_extractPropertyKeys($properties);
 
-        foreach($dataKeys as $field) {
+        foreach ($dataKeys as $field) {
 
             $keyNameVariants = [
                 $field,
@@ -83,7 +83,7 @@ abstract class AbstractRepository
             /**
              * Quick check if result is not FALSE or other value
              */
-            if(FALSE === in_array($searchResult, $keyNameVariants)) {
+            if (FALSE === in_array($searchResult, $keyNameVariants)) {
                 throw new InvalidDataForEntityException($data);
             }
 
@@ -101,13 +101,13 @@ abstract class AbstractRepository
      */
     private function _extractPropertyKeys(array $properties)
     {
-        if(TRUE === empty($properties)) {
+        if (TRUE === empty($properties)) {
             throw new PropertyKeyExtractionException();
         }
 
         $keys = [];
 
-        foreach($properties as $property) {
+        foreach ($properties as $property) {
             $keys[] = $property->getName();
         }
 
@@ -117,15 +117,15 @@ abstract class AbstractRepository
     }
 
     /**
-     * @param EntityInterface      $entity
+     * @param EntityInterface $entity
      * @param ReflectionProperty[] $properties
-     * @param array                $data
+     * @param array $data
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      */
     private function _fillEntity(EntityInterface $entity, array $properties, array $data)
     {
-        foreach($properties as $property) {
+        foreach ($properties as $property) {
             $property->setAccessible(TRUE);
             $property->setValue($entity, $data[$property->getName()]);
         }
