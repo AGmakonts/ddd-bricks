@@ -11,7 +11,7 @@ interface EntityInterface
 {
     public function assertIsTheSameAs(EntityInterface $entity);
 
-    public function getIdentity();
+    public function identity();
 }
 
 ?>

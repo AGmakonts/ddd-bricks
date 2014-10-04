@@ -24,6 +24,10 @@ abstract class AbstractRepository
     }
 
     /**
+     * Creates instance of an Entity class and fills it
+     * with provided data. New instance is created without
+     * calling constructor.
+     *
      * @param array $data
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
@@ -34,11 +38,13 @@ abstract class AbstractRepository
         $entityClass = new \ReflectionClass($this->getEntityType());
 
         if (FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
-            throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_A_ENTITY);
-        }
 
-        if (FALSE === $entityClass->isInstantiable()) {
+            throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_A_ENTITY);
+
+        } elseif (FALSE === $entityClass->isInstantiable()) {
+
             throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_INSTANTIABLE);
+
         }
 
         /* @var $entity EntityInterface */
@@ -47,15 +53,24 @@ abstract class AbstractRepository
 
         $filteredData = $this->_validateAndFilterDataKeys($data, $properties);
 
+        unset($entityClass);
+
         return $this->_fillEntity($entity, $properties, $filteredData);
     }
 
+    /**
+     * @return string
+     */
     public function getEntityType()
     {
         return $this->_entityType;
     }
 
     /**
+     * Check if data provided for the Entity is
+     * correct. Data keys are checked against
+     * properties of the Entity.
+     *
      * @param array $data
      * @param ReflectionProperty[] $properties
      *

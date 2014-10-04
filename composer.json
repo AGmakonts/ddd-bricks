@@ -10,7 +10,7 @@
 	"license" : "Apache-2.0",
 	"require" : {
 		"php" : ">=5.5",
-		"agmakonts/stl" : "dev-master",
+		"agmakonts/stl" : "dev-development",
 		"marc-mabe/php-enum" : "1.2.0",
 		"rhumsaa/uuid": "2.5"
 	}
