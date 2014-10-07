@@ -3,10 +3,12 @@
 namespace AGmakonts\DddBricks\Repository;
 
 use AGmakonts\DddBricks\Entity\EntityInterface;
+use AGmakonts\DddBricks\Repository\Exception\HelperException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidDataForEntityException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidEntityException;
 use AGmakonts\DddBricks\Repository\Exception\PropertyKeyExtractionException;
 use ReflectionProperty;
+use Symfony\Component\Console\Helper\Helper;
 
 /**
  *
@@ -16,7 +18,49 @@ use ReflectionProperty;
 abstract class AbstractRepository
 {
     private $_entityType;
-    private $_cache;
+    private $_requiredHelpers;
+
+    protected function requestHelpers(array $helpers)
+    {
+        foreach($helpers as $helper) {
+            $this->requestHelper($helper);
+        }
+    }
+
+    /**
+     * @param $helper
+     *
+     * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
+     */
+    protected function requestHelper($helper)
+    {
+        if(get_called_class() === $helper) {
+            throw new HelperException(HelperException::HELPER_SELF_REFERENCING);
+        }
+
+        if(TRUE === in_array($helper, $this->_requiredHelpers)) {
+            throw new HelperException(HelperException::HELPER_ALREADY_REQUESTED);
+        }
+
+        if(FALSE === class_exists($helper)) {
+            throw new HelperException(HelperException::HELPER_UNKNOWN);
+        }
+
+        $helperClass = new \ReflectionClass($helper);
+
+        if(FALSE === $helperClass->isSubclassOf(self::class)) {
+            throw new HelperException(HelperException::HELPER_INVALID);
+        }
+
+
+        $this->_requiredHelpers[$helper] = NULL;
+
+        return $this;
+
+
+
+    }
+
 
     private function _getEntity(array $data)
     {
