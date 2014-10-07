@@ -27,6 +27,11 @@ abstract class AbstractRepository
         }
     }
 
+    public function registerHelper($helper)
+    {
+
+    }
+
     /**
      * @param $helper
      *
