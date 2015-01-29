@@ -51,24 +51,24 @@ abstract class AbstractRepository
         }
     }
 
-    
-    
+
     /**
      * @param \AGmakonts\STL\String\String $entityType
      *
      * @return AbstractRepository
      * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
      */
-    protected function getHelperForEntityType(String $entityType){
-        if(FALSE === $this->_helpers->offsetExists($entityType)){
+    protected function getHelperForEntityType(String $entityType)
+    {
+        if (FALSE === $this->_helpers->offsetExists($entityType)) {
             throw new HelperException(HelperException::HELPER_UNKNOWN);
         }
-        
+
         return $this->_helpers->offsetGet($entityType);
     }
 
     /**
-     * @param $helper 
+     * @param $helper
      *
      * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
      */
@@ -94,10 +94,11 @@ abstract class AbstractRepository
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws \AGmakonts\DddBricks\Repository\Exception\InvalidEntityException
      */
-    final public function getInstance(array $data){
+    final public function getInstance(array $data)
+    {
         return $this->_createInstance($data);
     }
-    
+
     /**
      * Creates instance of an Entity class and fills it
      * with provided data. New instance is created without
@@ -138,18 +139,19 @@ abstract class AbstractRepository
      */
     final public function getEntityType()
     {
-        if(NULL === $this->_entityType){
+        if (NULL === $this->_entityType) {
             $this->setEntityType();
         }
-        
+
         return $this->_entityType;
     }
 
-    
+
     /**
-     * 
+     *
      * This function sets name of entity which repository is for
      * You must use _setEntityType() in this function
+     *
      * @return mixed
      */
     abstract public function setEntityType();
@@ -157,10 +159,11 @@ abstract class AbstractRepository
     /**
      * @param \AGmakonts\STL\String\String $entityType
      */
-    protected function _setEntityType(String $entityType){
+    protected function _setEntityType(String $entityType)
+    {
         $this->_entityType = $entityType;
     }
-    
+
     /**
      * Check if data provided for the Entity is
      * correct. Data keys are checked against
@@ -253,10 +256,10 @@ abstract class AbstractRepository
     final public static function getRepository(array $config = NULL, array $helpers = NULL)
     {
         if (NULL === self::$_repo) {
-            self::initiateRepo($config);
+            self::$_repo = self::__construct($config);
         }
 
-        if(NULL !== $helpers){
+        if (NULL !== $helpers) {
             foreach ($helpers as $helper) {
                 self::$_repo->registerHelper($helper);
             }
@@ -270,5 +273,16 @@ abstract class AbstractRepository
      *
      * @return AbstractRepository
      */
-    abstract function initiateRepo(array $config = null);
+    abstract protected function __construct(array $config = NULL);
+
+    /**
+     * This is just for making sure that singleton pattern is preserved
+     */
+    private function __clone()
+    {
+    }
+
+    private function __wakeup()
+    {
+    }
 }
