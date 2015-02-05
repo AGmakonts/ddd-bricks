@@ -111,7 +111,7 @@ abstract class AbstractRepository
      */
     private function _createInstance(array $data)
     {
-        $entityClass = new \ReflectionClass($this->getEntityType());
+        $entityClass = new \ReflectionClass($this->getEntityType()->value());
 
         if (FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
 
@@ -271,7 +271,6 @@ abstract class AbstractRepository
     /**
      * @param array $config
      *
-     * @return AbstractRepository
      */
     abstract protected function __construct(array $config = NULL);
 
