@@ -94,7 +94,7 @@ abstract class AbstractRepository
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws \AGmakonts\DddBricks\Repository\Exception\InvalidEntityException
      */
-    final public function getInstance(array $data)
+    final protected function getInstance(array $data)
     {
         return $this->_createInstance($data);
     }
@@ -137,7 +137,7 @@ abstract class AbstractRepository
     /**
      * @return \AGmakonts\STL\String\String
      */
-    final public function getEntityType()
+    final protected function getEntityType()
     {
         if (NULL === $this->_entityType) {
             $this->setEntityType();
@@ -154,7 +154,7 @@ abstract class AbstractRepository
      *
      * @return mixed
      */
-    abstract public function setEntityType();
+    abstract protected function setEntityType();
 
     /**
      * @param \AGmakonts\STL\String\String $entityType
