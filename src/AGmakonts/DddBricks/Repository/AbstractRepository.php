@@ -176,9 +176,6 @@ abstract class AbstractRepository
      */
     private function _validateAndFilterDataKeys(array $data, array $properties)
     {
-        if (count($data) !== count($properties)) {
-            return FALSE;
-        }
 
         $dataKeys     = array_keys($data);
         $filteredData = [];
