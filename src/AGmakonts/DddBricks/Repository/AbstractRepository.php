@@ -182,22 +182,20 @@ abstract class AbstractRepository
         $propertyKeys = $this->_extractPropertyKeys($properties);
 
         foreach ($dataKeys as $field) {
+            $fieldInProperties = $field;
 
-            $keyNameVariants = [
-                $field,
-                "_{$field}"
-            ];
-
-            $searchResult = array_search($keyNameVariants, $propertyKeys);
 
             /**
-             * Quick check if result is not FALSE or other value
+             * Quick check if given filed from data exist in entity
              */
-            if (FALSE === in_array($searchResult, $keyNameVariants)) {
-                throw new InvalidDataForEntityException($data);
+            if (FALSE === isset($propertyKeys[$fieldInProperties])) {
+                $fieldInProperties = "_{$fieldInProperties}";
+                if(FALSE === isset($propertyKeys[$fieldInProperties])){
+                    throw new InvalidDataForEntityException($data);
+                }
             }
 
-            $filteredData[$searchResult] = $data[$field];
+            $filteredData[$fieldInProperties] = $data[$field];
 
         }
 
@@ -218,7 +216,7 @@ abstract class AbstractRepository
         $keys = [];
 
         foreach ($properties as $property) {
-            $keys[] = $property->getName();
+            $keys[$property->getName()] = $property->getName();
         }
 
         return $keys;
@@ -237,7 +235,7 @@ abstract class AbstractRepository
     {
         foreach ($properties as $property) {
             $property->setAccessible(TRUE);
-            $property->setValue($entity, $data[$property->getName()]);
+            $property->setValue($entity, isset($data[$property->getName()])?$data[$property->getName()]:NULL);
         }
 
         return $entity;
