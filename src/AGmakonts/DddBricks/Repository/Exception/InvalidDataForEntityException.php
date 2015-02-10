@@ -16,9 +16,9 @@ class InvalidDataForEntityException extends \InvalidArgumentException
     /**
      * @param array $data
      */
-    public function __construct($data)
+    public function __construct(array $data)
     {
-        $this->message = sprintf("Provided data (%d fields) is not compatible");
+        $this->message = sprintf("Provided data (%d fields) is not compatible", count($data));
     }
 
 

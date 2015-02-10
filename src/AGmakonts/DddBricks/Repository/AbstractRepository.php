@@ -125,13 +125,39 @@ abstract class AbstractRepository
 
         /* @var $entity EntityInterface */
         $entity     = $entityClass->newInstanceWithoutConstructor();
-        $properties = $entityClass->getProperties();
+        $properties = $this->_getProperties($entityClass);
 
         $filteredData = $this->_validateAndFilterDataKeys($data, $properties);
 
         unset($entityClass);
 
         return $this->_fillEntity($entity, $properties, $filteredData);
+    }
+
+
+    /**
+     *
+     * Get all properties from current class and also from parent classes
+     * @param \ReflectionClass $entityClass
+     *
+     * @return array|\ReflectionProperty[]
+     */
+    private function _getProperties(\ReflectionClass $entityClass)
+    {
+        $properties = $entityClass->getProperties();
+        while (TRUE) {
+            if (FALSE === $entityClass->getParentClass() || FALSE === $entityClass->getParentClass()
+                                                                                  ->isSubclassOf(EntityInterface::class)
+            ) {
+                break;
+            }
+            $newEntityClass = new \ReflectionClass($entityClass->getParentClass()->name);
+            $properties     = array_merge($properties, $newEntityClass->getProperties());
+            $entityClass    = $newEntityClass;
+        }
+
+        return $properties;
+
     }
 
     /**
@@ -190,7 +216,7 @@ abstract class AbstractRepository
              */
             if (FALSE === isset($propertyKeys[$fieldInProperties])) {
                 $fieldInProperties = "_{$fieldInProperties}";
-                if(FALSE === isset($propertyKeys[$fieldInProperties])){
+                if (FALSE === isset($propertyKeys[$fieldInProperties])) {
                     throw new InvalidDataForEntityException($data);
                 }
             }
@@ -235,7 +261,7 @@ abstract class AbstractRepository
     {
         foreach ($properties as $property) {
             $property->setAccessible(TRUE);
-            $property->setValue($entity, isset($data[$property->getName()])?$data[$property->getName()]:NULL);
+            $property->setValue($entity, isset($data[$property->getName()]) ? $data[$property->getName()] : NULL);
         }
 
         return $entity;
@@ -251,7 +277,7 @@ abstract class AbstractRepository
     final public static function getRepository(array $config = NULL, array $helpers = NULL)
     {
         if (NULL === static::$_repo) {
-            $className = get_called_class();
+            $className     = get_called_class();
             static::$_repo = new $className($config);
         }
 
