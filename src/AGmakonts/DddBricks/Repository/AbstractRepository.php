@@ -276,18 +276,18 @@ abstract class AbstractRepository
      */
     final public static function getRepository(array $config = NULL, array $helpers = NULL)
     {
-        if (NULL === static::$_repo) {
-            $className     = get_called_class();
-            static::$_repo = new $className($config);
+        $calledClassName     = get_called_class();
+        if (FALSE === isset(self::$_repo[$calledClassName]) || NULL === self::$_repo[$calledClassName]) {
+            self::$_repo[$calledClassName] = new $calledClassName($config);
         }
 
         if (NULL !== $helpers) {
             foreach ($helpers as $helper) {
-                static::$_repo->registerHelper($helper);
+                self::$_repo[$calledClassName]->registerHelper($helper);
             }
         }
 
-        return static::$_repo;
+        return self::$_repo[$calledClassName];
     }
 
     /**
