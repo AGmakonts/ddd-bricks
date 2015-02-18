@@ -12,6 +12,6 @@
 		"php" : ">=5.5",
 		"agmakonts/stl" : "dev-master",
 		"marc-mabe/php-enum" : "1.2.0",
-		"rhumsaa/uuid": "2.5"
+		"rhumsaa/uuid": "3.0.x-dev"
 	}
 }
