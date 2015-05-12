@@ -51,6 +51,7 @@ class EntityAccessStrategy
          * Check if entity is not wrapped in collections, and if is go higher in backtrace
          */
         while ($classCallerPlace < count($backTrace) - 1) {
+            $classCallerPlace++;
             if ( self::isWrappedInCollection($backTrace, $classCallerPlace) ) {
                 continue;
             }
@@ -60,7 +61,6 @@ class EntityAccessStrategy
                 return;
             }
 
-            $classCallerPlace++;
         }
 
         throw new InvalidMethodCaller();
