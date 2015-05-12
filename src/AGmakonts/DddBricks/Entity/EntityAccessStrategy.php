@@ -7,6 +7,7 @@
 
 namespace AGmakonts\DddBricks\Entity;
 
+use AGmakonts\DddBricks\Collection\CollectionInterface;
 use AGmakonts\DddBricks\Entity\Exception\InvalidMethodCaller;
 use AGmakonts\DddBricks\Entity\Exception\InvalidRootEntity;
 
@@ -28,16 +29,64 @@ class EntityAccessStrategy
      */
     static public function ensureCalledFromRoot(AggregateEntityInterface $entity)
     {
+
         $rootEntity = $entity->getRootEntity();
 
         if ( FALSE === in_array(AggregateRootInterface::class, class_implements($rootEntity->value())) ) {
             throw new InvalidRootEntity();
         }
 
+        $classCallerPlace = 2;
+
         $backTrace = debug_backtrace();
 
-        if ( FALSE === (count($backTrace) >= 2) || (FALSE === ($backTrace[2]['class'] === $rootEntity->value())) ) {
-            throw new InvalidMethodCaller();
+        /*
+         * Check if method called directly from aggregating entity
+         */
+        if ( self::calledFromAggregatingRoot($backTrace, $classCallerPlace, $rootEntity) ) {
+            return;
         }
+
+        /*
+         * Check if entity is not wrapped in collections, and if is go higher in backtrace
+         */
+        while ($classCallerPlace < count($backTrace) - 1) {
+            if ( self::isWrappedInCollection($backTrace, $classCallerPlace) ) {
+                continue;
+            }
+
+
+            if ( TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value()) ) {
+                return;
+            }
+
+            $classCallerPlace++;
+        }
+
+        throw new InvalidMethodCaller();
+    }
+
+    /**
+     * @param $backTrace
+     * @param $classCallerPlace
+     *
+     * @return bool
+     */
+    private static function isWrappedInCollection($backTrace, $classCallerPlace)
+    {
+        return TRUE === in_array(CollectionInterface::class, class_implements($backTrace[$classCallerPlace]['class']));
+    }
+
+    /**
+     * @param $backTrace
+     * @param $classCallerPlace
+     * @param $rootEntity
+     *
+     * @return bool
+     */
+    private static function calledFromAggregatingRoot($backTrace, $classCallerPlace, $rootEntity)
+    {
+        return (TRUE === (count($backTrace) > $classCallerPlace) &&
+            (TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value())));
     }
 }
