@@ -47,17 +47,25 @@ class EntityAccessStrategy
             return;
         }
 
+
+        /*
+         * Check if method called by entity itself
+         */
+        if( self::calledFromEntityItself($entity, $backTrace, $classCallerPlace) ){
+            return;
+        }
+
         /*
          * Check if entity is not wrapped in collections, and if is go higher in backtrace
          */
         while ($classCallerPlace < count($backTrace) - 1) {
             $classCallerPlace++;
-            if ( self::isWrappedInCollection($backTrace, $classCallerPlace) ) {
+            if ( self::wrappedInCollection($backTrace, $classCallerPlace) ) {
                 continue;
             }
 
 
-            if ( TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value()) ) {
+            if (TRUE === isset($backTrace[$classCallerPlace]['class']) && TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value()) ) {
                 return;
             }
 
@@ -72,9 +80,10 @@ class EntityAccessStrategy
      *
      * @return bool
      */
-    private static function isWrappedInCollection($backTrace, $classCallerPlace)
+    private static function wrappedInCollection($backTrace, $classCallerPlace)
     {
-        return TRUE === in_array(CollectionInterface::class, class_implements($backTrace[$classCallerPlace]['class']));
+        return (TRUE === isset($backTrace[$classCallerPlace]['class']) &&
+            TRUE === in_array(CollectionInterface::class, class_implements($backTrace[$classCallerPlace]['class'])));
     }
 
     /**
@@ -87,6 +96,20 @@ class EntityAccessStrategy
     private static function calledFromAggregatingRoot($backTrace, $classCallerPlace, $rootEntity)
     {
         return (TRUE === (count($backTrace) > $classCallerPlace) &&
-            (TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value())));
+            TRUE === isset($backTrace[$classCallerPlace]['class']) &&
+            TRUE === ($backTrace[$classCallerPlace]['class'] === $rootEntity->value()));
+    }
+
+    /**
+     * @param \AGmakonts\DddBricks\Entity\AggregateEntityInterface $entity
+     * @param                                                      $backTrace
+     * @param                                                      $classCallerPlace
+     *
+     * @return bool
+     */
+    private static function calledFromEntityItself(AggregateEntityInterface $entity, $backTrace, $classCallerPlace)
+    {
+        return (TRUE === (count($backTrace) > $classCallerPlace) &&
+            TRUE === ($backTrace[$classCallerPlace]['class'] === get_class($entity)));
     }
 }
