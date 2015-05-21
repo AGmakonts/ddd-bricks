@@ -6,6 +6,8 @@ use AGmakonts\DddBricks\Entity\EntityInterface;
 use AGmakonts\DddBricks\Repository\Exception\HelperException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidDataForEntityException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidEntityException;
+use AGmakonts\DddBricks\Repository\PostActionAwareInterface;
+use AGmakonts\DddBricks\Repository\PreActionAwareInterface;
 use AGmakonts\DddBricks\Repository\Exception\PropertyKeyExtractionException;
 use AGmakonts\STL\String\String;
 use ReflectionProperty;
@@ -84,11 +86,22 @@ abstract class AbstractRepository
 
         /* @var $entity EntityInterface */
         $entity     = $entityClass->newInstanceWithoutConstructor();
+
+        if(in_array(PreActionAwareInterface::class, class_implements($entity))){
+            /* @var $entity PreActionAwareInterface */
+            $entity->beforeGetInstanceAction();
+        }
+
         $properties = $this->_getProperties($entityClass);
 
         $filteredData = $this->_validateAndFilterDataKeys($data, $properties);
 
         unset($entityClass);
+
+        if(in_array(PostActionAwareInterface::class, class_implements($entity))){
+            /* @var $entity PostActionAwareInterface */
+            $entity->afterGetInstanceAction();
+        }
 
         return $this->_fillEntity($entity, $properties, $filteredData);
     }
