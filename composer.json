@@ -11,7 +11,7 @@
 	"require" : {
 		"php" : ">=5.5",
 		"agmakonts/stl" : "2.*",
-		"marc-mabe/php-enum" : "1.2.0",
-		"rhumsaa/uuid": "3.0.x-dev"
+		"marc-mabe/php-enum" : "2.*",
+		"ramsey/uuid": "2.8.*"
 	}
 }

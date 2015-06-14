@@ -7,7 +7,7 @@ use AGmakonts\DddBricks\Repository\Exception\HelperException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidDataForEntityException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidEntityException;
 use AGmakonts\DddBricks\Repository\Exception\PropertyKeyExtractionException;
-use AGmakonts\STL\String\String;
+use AGmakonts\STL\String\Text;
 use ReflectionProperty;
 
 /**
@@ -24,7 +24,7 @@ abstract class AbstractRepository
 
 
     /**
-     * @var \AGmakonts\STL\String\String
+     * @var \AGmakonts\STL\String\Text
      */
     private $_entityType;
 
@@ -53,12 +53,12 @@ abstract class AbstractRepository
 
 
     /**
-     * @param \AGmakonts\STL\String\String $entityType
+     * @param \AGmakonts\STL\String\Text $entityType
      *
      * @return AbstractRepository
      * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
      */
-    protected function getHelperForEntityType(String $entityType)
+    protected function getHelperForEntityType(Text $entityType)
     {
         if (FALSE === $this->_helpers->offsetExists($entityType)) {
             throw new HelperException(HelperException::HELPER_UNKNOWN);
@@ -161,7 +161,7 @@ abstract class AbstractRepository
     }
 
     /**
-     * @return \AGmakonts\STL\String\String
+     * @return \AGmakonts\STL\String\Text
      */
     final protected function getEntityType()
     {
@@ -183,9 +183,9 @@ abstract class AbstractRepository
     abstract protected function setEntityType();
 
     /**
-     * @param \AGmakonts\STL\String\String $entityType
+     * @param \AGmakonts\STL\String\Text $entityType
      */
-    protected function _setEntityType(String $entityType)
+    protected function _setEntityType(Text $entityType)
     {
         $this->_entityType = $entityType;
     }
