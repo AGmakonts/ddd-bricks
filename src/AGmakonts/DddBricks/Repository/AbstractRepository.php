@@ -6,10 +6,8 @@ use AGmakonts\DddBricks\Entity\EntityInterface;
 use AGmakonts\DddBricks\Repository\Exception\HelperException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidDataForEntityException;
 use AGmakonts\DddBricks\Repository\Exception\InvalidEntityException;
-use AGmakonts\DddBricks\Repository\PostActionAwareInterface;
-use AGmakonts\DddBricks\Repository\PreActionAwareInterface;
 use AGmakonts\DddBricks\Repository\Exception\PropertyKeyExtractionException;
-use AGmakonts\STL\String\String;
+use AGmakonts\STL\String\Text;
 use ReflectionProperty;
 
 /**
@@ -20,13 +18,13 @@ use ReflectionProperty;
 abstract class AbstractRepository
 {
     /**
-     * @var AbstractRepository[]
+     * @var AbstractRepository
      */
     protected static $_repo;
 
 
     /**
-     * @var \AGmakonts\STL\String\String
+     * @var \AGmakonts\STL\String\Text
      */
     private $_entityType;
 
@@ -37,29 +35,70 @@ abstract class AbstractRepository
 
 
     /**
-     * @param \AGmakonts\STL\String\String $helperClassName
+     * @param $helper
      *
-     * @return \AGmakonts\DddBricks\Repository\AbstractRepository
      * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
      */
-    final protected function requestHelper(String $helperClassName)
+    protected function registerHelper(AbstractRepository $helper)
     {
-        if (FALSE === isset(self::$_repo[$helperClassName->value()])) {
-            throw new HelperException("This helper doesn't exist");
+        if (FALSE === $this->_helpers instanceof \SplObjectStorage) {
+            $this->_helpers = new \SplObjectStorage();
         }
 
-        return self::$_repo[$helperClassName->value()];
+
+        if (FALSE === $this->_helpers->offsetExists($helper->getEntityType())) {
+            $this->setHelper($helper);
+        }
+    }
+
+
+    /**
+     * @param \AGmakonts\STL\String\Text $entityType
+     *
+     * @return AbstractRepository
+     * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
+     */
+    protected function getHelperForEntityType(Text $entityType)
+    {
+        if (FALSE === $this->_helpers->offsetExists($entityType)) {
+            throw new HelperException(HelperException::HELPER_UNKNOWN);
+        }
+
+        return $this->_helpers->offsetGet($entityType);
+    }
+
+    /**
+     * @param $helper
+     *
+     * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
+     */
+    private function setHelper(AbstractRepository $helper)
+    {
+
+
+        if (get_called_class() === $helper) {
+            throw new HelperException(HelperException::HELPER_SELF_REFERENCING);
+        }
+
+
+        if (TRUE === $this->_helpers->offsetExists($helper->getEntityType())) {
+            throw new HelperException(HelperException::HELPER_ALREADY_REQUESTED);
+        }
+
+        $this->_helpers->attach($helper->getEntityType(), $helper);
     }
 
     /**
      * @param array $data
+     * @param Text  $entityClass Entity class for library to fill.
+     *                           If empty than value from SetEntityType function will be taken
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws \AGmakonts\DddBricks\Repository\Exception\InvalidEntityException
      */
-    final protected function getInstance(array $data)
+    final protected function getInstance(array $data, Text $entityClass = NULL)
     {
-        return $this->_createInstance($data);
+        return $this->_createInstance($data, $entityClass);
     }
 
     /**
@@ -68,40 +107,36 @@ abstract class AbstractRepository
      * calling constructor.
      *
      * @param array $data
+     * @param Text  $entityClass
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws InvalidEntityException
      */
-    private function _createInstance(array $data)
+    private function _createInstance(array $data, Text $entityClass = NULL)
     {
-        $entityClass = new \ReflectionClass($this->getEntityType()->value());
+        if (NULL === $entityClass) {
+            $entityClass = new \ReflectionClass($this->getEntityType()->value());
+        } else {
+            $entityClass = new \ReflectionClass($entityClass->value());
+        }
 
         if (FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
 
             throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_A_ENTITY);
+
         } elseif (FALSE === $entityClass->isInstantiable()) {
 
             throw new InvalidEntityException($this->getEntityType(), InvalidEntityException::NOT_INSTANTIABLE);
+
         }
 
         /* @var $entity EntityInterface */
         $entity     = $entityClass->newInstanceWithoutConstructor();
-
-        if(in_array(PreActionAwareInterface::class, class_implements($entity))){
-            /* @var $entity PreActionAwareInterface */
-            $entity->beforeGetInstanceAction();
-        }
-
         $properties = $this->_getProperties($entityClass);
 
         $filteredData = $this->_validateAndFilterDataKeys($data, $properties);
 
         unset($entityClass);
-
-        if(in_array(PostActionAwareInterface::class, class_implements($entity))){
-            /* @var $entity PostActionAwareInterface */
-            $entity->afterGetInstanceAction();
-        }
 
         return $this->_fillEntity($entity, $properties, $filteredData);
     }
@@ -130,10 +165,11 @@ abstract class AbstractRepository
         }
 
         return $properties;
+
     }
 
     /**
-     * @return \AGmakonts\STL\String\String
+     * @return \AGmakonts\STL\String\Text
      */
     final protected function getEntityType()
     {
@@ -155,9 +191,9 @@ abstract class AbstractRepository
     abstract protected function setEntityType();
 
     /**
-     * @param \AGmakonts\STL\String\String $entityType
+     * @param \AGmakonts\STL\String\Text $entityType
      */
-    protected function _setEntityType(String $entityType)
+    protected function _setEntityType(Text $entityType)
     {
         $this->_entityType = $entityType;
     }
@@ -194,6 +230,7 @@ abstract class AbstractRepository
             }
 
             $filteredData[$fieldInProperties] = $data[$field];
+
         }
 
         return $filteredData;
@@ -217,6 +254,8 @@ abstract class AbstractRepository
         }
 
         return $keys;
+
+
     }
 
     /**
@@ -241,30 +280,19 @@ abstract class AbstractRepository
      * @param array $config
      * @param array $helpers
      *
-     * @return \AGmakonts\DddBricks\Repository\AbstractRepository
-     * @throws \AGmakonts\DddBricks\Repository\Exception\HelperException
+     * @return AbstractRepository
      */
     final public static function getRepository(array $config = NULL, array $helpers = NULL)
     {
         $calledClassName = get_called_class();
-
+        if (FALSE === isset(self::$_repo[$calledClassName]) || NULL === self::$_repo[$calledClassName]) {
+            self::$_repo[$calledClassName] = new $calledClassName($config);
+        }
 
         if (NULL !== $helpers) {
             foreach ($helpers as $helper) {
-                if (TRUE === isset(self::$_repo[get_class($helper)])) {
-                    continue;
-                }
-
-                if (FALSE === ($helper instanceof AbstractRepository)) {
-                    throw new HelperException("Helper must be instance of AbstractRepository");
-                }
-
-                self::$_repo[get_class($helper)] = $helper;
+                self::$_repo[$calledClassName]->registerHelper($helper);
             }
-        }
-
-        if (FALSE === isset(self::$_repo[$calledClassName]) || NULL === self::$_repo[$calledClassName]) {
-            self::$_repo[$calledClassName] = new $calledClassName($config);
         }
 
         return self::$_repo[$calledClassName];
