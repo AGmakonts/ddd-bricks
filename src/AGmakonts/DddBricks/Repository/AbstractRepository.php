@@ -90,13 +90,15 @@ abstract class AbstractRepository
 
     /**
      * @param array $data
+     * @param Text  $entityClass Entity class for library to fill.
+     *                           If empty than value from SetEntityType function will be taken
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws \AGmakonts\DddBricks\Repository\Exception\InvalidEntityException
      */
-    final protected function getInstance(array $data)
+    final protected function getInstance(array $data, Text $entityClass = NULL)
     {
-        return $this->_createInstance($data);
+        return $this->_createInstance($data, $entityClass);
     }
 
     /**
@@ -105,13 +107,18 @@ abstract class AbstractRepository
      * calling constructor.
      *
      * @param array $data
+     * @param Text  $entityClass
      *
      * @return \AGmakonts\DddBricks\Entity\EntityInterface
      * @throws InvalidEntityException
      */
-    private function _createInstance(array $data)
+    private function _createInstance(array $data, Text $entityClass = NULL)
     {
-        $entityClass = new \ReflectionClass($this->getEntityType()->value());
+        if (NULL === $entityClass) {
+            $entityClass = new \ReflectionClass($this->getEntityType()->value());
+        } else {
+            $entityClass = new \ReflectionClass($entityClass->value());
+        }
 
         if (FALSE === $entityClass->isSubclassOf(EntityInterface::class)) {
 
@@ -138,6 +145,7 @@ abstract class AbstractRepository
     /**
      *
      * Get all properties from current class and also from parent classes
+     *
      * @param \ReflectionClass $entityClass
      *
      * @return array|\ReflectionProperty[]
@@ -276,7 +284,7 @@ abstract class AbstractRepository
      */
     final public static function getRepository(array $config = NULL, array $helpers = NULL)
     {
-        $calledClassName     = get_called_class();
+        $calledClassName = get_called_class();
         if (FALSE === isset(self::$_repo[$calledClassName]) || NULL === self::$_repo[$calledClassName]) {
             self::$_repo[$calledClassName] = new $calledClassName($config);
         }
