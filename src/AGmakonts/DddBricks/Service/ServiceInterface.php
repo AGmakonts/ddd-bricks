@@ -11,6 +11,6 @@ namespace AGmakonts\DddBricks\Service;
  *
  * @package AGmakonts\DddBricks\Service
  */
-class ServiceInterface
+interface ServiceInterface
 {
 }
