@@ -60,6 +60,10 @@ abstract class AbstractRepository
      */
     protected function getHelperForEntityType(Text $entityType)
     {
+        if (FALSE === $this->_helpers instanceof \SplObjectStorage) {
+            $this->_helpers = new \SplObjectStorage();
+        }
+
         if (FALSE === $this->_helpers->offsetExists($entityType)) {
             throw new HelperException(HelperException::HELPER_UNKNOWN);
         }
